@@ -54,11 +54,45 @@ server.get("/api/users" , (req, res)=>{
     }
 })
 server.get("/api/users/:id" , (req, res)=>{
-    let userId = req.params.id
+    const userId = req.params.id
 
     if(userId){
         res.status(200).json(users[userId])
+    } else if (userId !== users.id){
+        res.status(404).json({message:"The user with the specified ID doesnt not exist"})
     } else {
         res.status(500).json({ errorMessage: "The users information could not be retrieved"})
+    }
+})
+
+server.delete("/api/users/:id" , (req, res)=>{
+    const userId = req.params.id
+    const deleted = users.find(u => u.id === userId)
+    
+    
+   if (userId === users.id){
+        users = users.filter(u => u.id !== userId)
+        res.status(200).json(deleted)
+    }  else if (userId !== users.id){
+        res.status(404).json({message:"The user with the specified ID doesnt not exist"})
+    } else {
+        res.status(500).json({errorMessage:"The user could not be removed"})
+    }
+})
+
+server.put("/api/users/:id" , (req, res)=>{
+    const userId = req.params.id
+    const changes = req.body
+    let found = users.find(u =>u.id === userId)
+    
+    if (userId !== users.id){
+        res.status(404).json({message:"The user with the specified ID doesnt not exist"})
+    } else if (!changes.name || !changes.bio) {
+        res.status(400).json({errorMessage:"Please provide name and bio for user"})
+    } else if (changes.name && changes.bio) {
+        Object.assign(found,changes)
+        res.status(200).json(found)
+    } else {
+        res.status(500).json({errorMessage:"The user information could not be modified"})
     }
 })
